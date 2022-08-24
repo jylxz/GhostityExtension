@@ -1,0 +1,32 @@
+{
+  "name": "vGhostity",
+  "version": "0.1.0",
+  "description": "Live captions for VTubers",
+  "permissions": ["identity", "storage", "activeTab", "tabs", "scripting"],
+  "host_permissions": ["https://*.youtube.com/*"],
+  "background": {
+    "service_worker": "background.webpack.js"
+  },
+  "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAkm7RrXsP4Q5AFHsBNw4c0IawfMXm1JHIqCe1v9OzG6D6jgPy3ISytlR7SKv1Pej1BEum1pYcnXHB0TZi5Xoevbwrzjci7TJUFOzs757fIDs22rIqVOI/pJErYzRu3/wmkcN04HnEDeCdWhkorfNxQngkFCxjH8ZpMRTKN24h0c6/4gFu6u5UjL7oKMji0oOZxjy6YZq/PcC0yelAIu1upu8R3lXtAnUObT345yUJ/z7clcItINCgSUE4nIYdM+8zzy4uq/yp3/zi3OmKovnCI5cyMBAXofGUpRzpjhqm0b83V31vvFAQd+DBStkcCHHcVP1Wyqa8KPLhQLoWQeyW6QIDAQAB",
+  "content_scripts": [
+    {
+      "matches": ["https://*.youtube.com/*"],
+      "js": ["content.webpack.js"]
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["fonts/Quicksand-Regular.ttf", "assets/Ghostity-svg-white.svg"],
+      "matches": ["https://*.youtube.com/*"]
+    }
+  ],
+  "action": {
+    "default_title": "vGhostity",
+    "default_popup": "popup.html"
+  },
+  "manifest_version": 3,
+  "content_security_policy": {
+    "sandbox": "sandbox allow-scripts allow-forms allow-popups allow-modals; script-src 'self'; child-src 'self'"
+  },
+  "sandbox": ["background.webpack.js"]
+}

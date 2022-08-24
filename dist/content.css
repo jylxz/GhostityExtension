@@ -1,0 +1,165 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+#vghostity {
+  position: relative;
+}
+
+.vghostity-button {
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  width: 48px;
+  height: 100%;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+
+.vghostity-button-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.vghostity-button-img {
+  height: 100%;
+  width: 50%;
+}
+
+.vghostity-caption {
+  position: absolute;
+  z-index: 1000;
+  color: white;
+}
+
+
+.vghostity-tooltip {
+  font-weight: 500;
+  font-family: "Roboto";
+  background-color: #1b1b1be3;
+  left: -1.5rem;
+  bottom: 6.5rem;
+  position: absolute;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 2px;
+  font-size: 1.3rem;
+}
+
+.vghostity-options-menu {
+  width: 18rem;
+  padding: 0.75rem 0;
+  background: #1b1b1be3;
+  position: absolute;
+  bottom: 6rem;
+  border-radius: 2px;
+}
+
+.vghostity-option {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  background: transparent;
+  border: 0;
+  color: white;
+  padding: 1rem;
+  font-family: "Roboto";
+  font-weight: 500;
+  font-size: 1.25rem;
+}
+
+.vghostity-option:hover {
+  background-color: #ffffff20;
+}
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 36px;
+  height: 16px;
+}
+
+/* Hide default HTML checkbox */
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgb(105, 105, 105);
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: -2px;
+  bottom: -2.5px;
+  background-color: white;
+  -webkit-transition: 0.2s;
+  transition: 0.2s;
+}
+
+input:checked + .slider {
+  background-color: #deecfc;
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #deecfc;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(20px);
+  -ms-transform: translateX(20px);
+  transform: translateX(20px);
+}
+
+/* Rounded sliders */
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+#vghostity-caption {
+  width: 90%;
+  overflow-wrap: break-word;
+}
+
+.vcaption-unshift {
+  position: absolute;
+  z-index: 100;
+  bottom: 0;
+  left:50%;
+  transform: translateX(-50%);
+}
+
+.vcaption-shift {
+  position: absolute;
+  z-index: 30;
+  bottom: 6rem;
+  left:50%;
+  transform: translateX(-50%);
+}
+
+.vcaption {
+  background-color: #1b1b1be3;
+  border-radius: 2px;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}

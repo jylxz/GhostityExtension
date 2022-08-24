@@ -1,1 +1,1 @@
-# GhostityExtension
+# vGhostityExtension

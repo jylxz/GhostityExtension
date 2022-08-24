@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  box-sizing: unset;
+}
+
+.ytp-button {
+  box-sizing: border-box;
+}
+
+/* The slider */
+.slider {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition: all 0.3s ease-in;
+  background: rgb(107 114 128);
+  border-radius: 0.75rem;
+}
+
+.slider::after {
+  content: "";
+  background: white;
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  top: -2px;
+  left: -4px;
+  border-radius: 100%;
+  transition: all 0.3s ease-in;
+}
+
+input:checked + .slider {
+  background: #ceecfc;
+}
+
+input:checked + .slider::after {
+  transform: translateX(24px);
+}
+
+.toggle {
+  position: relative;
+}
+
+#ghostity-caption {
+  width: 90%;
+  overflow-wrap: break-word;
+  max-height: 14rem;
+  overflow: auto;
+}
+
+.ghostity-caption-unshift {
+  position: absolute;
+  z-index: 100;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.ghostity-caption-shift {
+  position: absolute;
+  z-index: 30;
+  bottom: 6rem;
+  left: 50%;
+  transform: translateX(-50%);
+}

@@ -1,0 +1,31 @@
+@import url(https://fonts.googleapis.com/css?family=Quicksand);
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+    html {
+        font-family: "Quicksand";
+    }
+}
+
+html {
+  width: 15rem;
+  height: 18rem;
+  overflow-x: hidden;
+  font-family: "Quicksand"
+}
+
+body {
+  overflow-x: auto;
+}
+
+progress::-webkit-progress-bar {
+  background-color: white;
+  border-radius: 4px;
+}
+
+progress::-webkit-progress-value {
+  background-color: #0f2b46;
+}

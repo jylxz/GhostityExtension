@@ -3,6 +3,9 @@ const path = require("path");
 
 module.exports = {
   devtool: "cheap-module-source-map",
+  experiments: {
+    topLevelAwait: true,
+  },
   entry: {
     content: "./src/content/content.tsx",
     background: "./src/background/background.ts",
@@ -11,7 +14,7 @@ module.exports = {
   output: {
     filename: "[name].webpack.js",
     path: path.resolve(__dirname, "dist"),
-    iife: true
+    iife: true,
   },
   module: {
     rules: [
@@ -43,6 +46,11 @@ module.exports = {
     ],
   },
   resolve: {
+    alias: {
+      "@Azure": path.resolve(__dirname, "./src/services/Azure"),
+      "@DeepL": path.resolve(__dirname, "./src/services/DeepL"),
+      utils: path.resolve(__dirname, "./src/utils"),
+    },
     extensions: [".ts", ".js", ".jsx", ".tsx"],
   },
 };

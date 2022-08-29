@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { getMetricForData } from "../../services/Azure/Monitor";
-import { getUsage, DeepLUsage } from "../../services/DeepL";
+import { DeepLUsage } from "services/DeepL/types";
+import { getUsage } from "../../services/DeepL";
 import AzureChangeKey from "./AzureChangeKey";
 import DeepLChangeKey from "./DeepLChangeKey";
 

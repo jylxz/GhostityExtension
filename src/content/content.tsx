@@ -6,39 +6,73 @@ import "./content.css";
 import Menu from "./components/Menu";
 import addCaptionContainer from "../utils/addCaptionContainer";
 import Caption from "./components/Caption";
+import { initializeSpeechClient } from "./speech-client";
+
+const {
+  status,
+  startSpeechClient,
+  stopSpeechClient,
+  pauseSpeechRecognition,
+  restartSpeechRecognition,
+} = await initializeSpeechClient();
 
 chrome.storage.sync.get("ghostity", (results) => {
   if (!results.ghostity) {
     chrome.storage.sync.set({
       ghostity: {
+        speechClient: {
+          source: {
+            language: "Japanese",
+            code: "ja-JP",
+          },
+          target: {
+            language: "English",
+            code: "EN",
+          },
+        },
         captions: {
           showTranscribed: true,
           showTranslated: true,
-          fontSize: 12,
         },
       },
     });
   }
 });
 
-chrome.runtime.onMessage.addListener((msg, sender, response) => {
-  if (msg.command === "load-button") {
-    const buttonExists = document.getElementById("ghostity");
+chrome.runtime.onMessage.addListener(async (msg, sender, response) => {
+  const { SpeechRecognizerStatus } = status();
 
-    if (!buttonExists) {
-      const parentElement =
-        document.getElementsByClassName("ytp-right-controls")[0];
+  if (msg.command === "pause-speech-recognition") {
+    if (SpeechRecognizerStatus === "active") {
+      pauseSpeechRecognition();
+    }
+  }
 
-      const buttonRoot = insertNewElement<"button">({
-        parentElement,
+  if (msg.command === "restart-speech-recognition") {
+    if (SpeechRecognizerStatus === "inactive") {
+      restartSpeechRecognition();
+    }
+  }
+
+  if (msg.command === "load-content") {
+    const doesButtonExists = document.getElementById("ghostity");
+
+    if (!doesButtonExists) {
+      // Create Ghostity button
+      const ghostityButton = insertNewElement<"button">({
+        parentElement: document.querySelector(
+          ".ytp-right-controls"
+        ) as HTMLDivElement,
         tag: "button",
         class: "ytp-button relative -top-[1.2rem] h-[48px] w-[48px]",
         id: "ghostity",
         prepend: true,
       });
 
+      renderComponent(<Button />, ghostityButton);
+
       // For Tooltip
-      buttonRoot.addEventListener("mouseenter", () => {
+      ghostityButton.addEventListener("mouseenter", () => {
         const tooltip = document.querySelector(
           ".ytp-tooltip.ytp-bottom"
         ) as HTMLDivElement;
@@ -53,11 +87,11 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
         setTimeout(() => {
           tooltip.style.display = "unset";
           tooltipText.innerHTML = "Ghostity";
-          tooltip.style.left = `${buttonRoot.offsetLeft - 12}px`;
+          tooltip.style.left = `${ghostityButton.offsetLeft - 12}px`;
         }, 100);
       });
 
-      buttonRoot.addEventListener("mouseleave", () => {
+      ghostityButton.addEventListener("mouseleave", () => {
         const tooltip = document.querySelector(
           ".ytp-tooltip.ytp-bottom"
         ) as HTMLDivElement;
@@ -66,32 +100,33 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
       });
 
       // Create Setting Menu
-      const captionsMenu = document.getElementById("ghostity-menu");
+      const menuRoot = insertNewElement({
+        parentElement: document.getElementById("movie_player") as Element,
+        id: "ghostity-menu",
+        class:
+          "relative z-10 w-[26.5rem]  ytp-popup ytp-settings-menu",
+      });
 
-      if (!captionsMenu) {
-        const ytPlayer = document.querySelector("#movie_player") as Element;
+      menuRoot.style.display = "none";
+      menuRoot.style.left = `${ghostityButton.offsetLeft - 12}px`;
 
-        const menuRoot = insertNewElement({
-          parentElement: ytPlayer,
-          id: "ghostity-menu",
-          class:
-            "relative z-10 w-[26.5rem] h-[177px] ytp-popup ytp-settings-menu",
-        });
+      renderComponent(
+        <Menu
+          status={status}
+          startSpeechClient={startSpeechClient}
+          stopSpeechClient={stopSpeechClient}
+        />,
+        menuRoot
+      );
 
-        menuRoot.style.display = "none";
-        menuRoot.style.left = `${buttonRoot.offsetLeft - 12}px`;
-
-        renderComponent(<Menu />, menuRoot);
-      }
-
-      buttonRoot.addEventListener("click", () => {
+      ghostityButton.addEventListener("click", () => {
         const captionsMenu = document.getElementById("ghostity-menu");
-        const buttonRoot = document.getElementById("ghostity");
+        const ghostityButton = document.getElementById("ghostity");
 
         if (captionsMenu) {
           if (captionsMenu.style.display === "none") {
-            captionsMenu.style.left = buttonRoot
-              ? `${buttonRoot.offsetLeft - 12}px`
+            captionsMenu.style.left = ghostityButton
+              ? `${ghostityButton.offsetLeft - 12}px`
               : "";
             captionsMenu.style.display = "unset";
           } else {
@@ -100,7 +135,7 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
         }
       });
 
-      // Mutation Observer
+      // Autohide Settings Menu with Youtube player
       const targetNode = document.getElementById("movie_player");
 
       const callback = function (
@@ -122,7 +157,12 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
 
       targetNode && observer.observe(targetNode, { attributes: true });
 
-      renderComponent(<Button />, buttonRoot);
+      // Create Caption Container
+      const captionContainer = document.getElementById("ghostity-caption");
+
+      if (!captionContainer) {
+        addCaptionContainer();
+      }
     }
   }
 
@@ -133,29 +173,29 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
 
       const captionContainer = document.getElementById("ghostity-caption");
 
-      if (!captionContainer) {
-        addCaptionContainer();
-      } else {
+      if (captionContainer) {
         const caption = insertNewElement({
           parentElement: captionContainer,
         });
 
-        const render = renderComponent(
+        renderComponent(
           <Caption captions={captions} settings={captionSettings} />,
           caption
         );
 
         setTimeout(() => {
-          var objDiv = document.getElementById("ghostity-caption");
+          const caption = document.getElementById("ghostity-caption");
 
-          if (objDiv) {
-            objDiv.scrollTop = objDiv.scrollHeight;
+          if (caption) {
+            caption.scrollTop = caption.scrollHeight;
           }
         }, 0);
 
         setTimeout(() => {
-          document.getElementById("ghostity-caption")?.firstElementChild?.remove()
-        }, captionSettings.speed || 10000);
+          document
+            .getElementById("ghostity-caption")
+            ?.firstElementChild?.remove();
+        }, 10000 / captionSettings.speed);
       }
     });
   }

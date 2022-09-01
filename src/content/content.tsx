@@ -7,6 +7,7 @@ import Menu from "./components/Menu";
 import addCaptionContainer from "../utils/addCaptionContainer";
 import Caption from "./components/Caption";
 import { initializeSpeechClient } from "./speech-client";
+import PausedNotification from "./components/PausedNotification";
 
 const {
   status,
@@ -103,8 +104,7 @@ chrome.runtime.onMessage.addListener(async (msg, sender, response) => {
       const menuRoot = insertNewElement({
         parentElement: document.getElementById("movie_player") as Element,
         id: "ghostity-menu",
-        class:
-          "relative z-10 w-[26.5rem]  ytp-popup ytp-settings-menu",
+        class: "relative z-10 w-[26.5rem]  ytp-popup ytp-settings-menu",
       });
 
       menuRoot.style.display = "none";
@@ -163,6 +163,29 @@ chrome.runtime.onMessage.addListener(async (msg, sender, response) => {
       if (!captionContainer) {
         addCaptionContainer();
       }
+
+      // Create Notification Container
+      const notificationContainer = document.getElementById(
+        "ghostity-notification"
+      );
+
+      if (!notificationContainer) {
+        const notification = insertNewElement<"div">({
+          parentElement: document.getElementById("movie_player") as Element,
+          id: "ghostity-notification",
+          class: "absolute top-0 right-0 z-20 ytp-popup",
+          prepend: true,
+          style: { display: "none" },
+        });
+
+        renderComponent(
+          <PausedNotification
+            restartSpeechRecognition={restartSpeechRecognition}
+            stopSpeechClient={stopSpeechClient}
+          />,
+          notification
+        );
+      }
     }
   }
 
@@ -198,5 +221,15 @@ chrome.runtime.onMessage.addListener(async (msg, sender, response) => {
         }, 10000 / captionSettings.speed);
       }
     });
+  }
+
+  if (msg.command === "show-paused-notification") {
+    pauseSpeechRecognition();
+
+    const pauseNotification = document.getElementById("ghostity-notification");
+
+    if (pauseNotification) {
+      pauseNotification.style.display = "block";
+    }
   }
 });

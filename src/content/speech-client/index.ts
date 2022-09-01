@@ -2,7 +2,7 @@ import * as SpeechSDK from "microsoft-cognitiveservices-speech-sdk";
 import { initializeSpeechRecognizer } from "@Azure/index";
 import { SpeechRecognitionLanguages } from "@Azure/types";
 import getCredentials from "utils/getCredentials";
-import { attachClientListeners } from "./clientListeners";
+import { attachSpeechListeners } from "./SpeechListeners";
 
 export interface SpeechClient {
   status: () => {
@@ -17,15 +17,48 @@ export interface SpeechClient {
 export async function initializeSpeechClient(): Promise<SpeechClient> {
   let MediaStream: MediaStream | undefined;
   let SpeechRecognizer: SpeechSDK.SpeechRecognizer | undefined;
-  let recognitionLang: SpeechRecognitionLanguages = "ja-JP";
   let SpeechRecognizerStatus: "active" | "inactive" = "inactive";
+  let pauseTimeout: NodeJS.Timeout
 
   const { AzureCredentials } = await getCredentials();
+
+  chrome.storage.onChanged.addListener(async (changes, areaName) => {
+    switch (areaName) {
+      case "sync":
+        if (
+          changes.ghostity.newValue.speechClient.source.code !==
+            changes.ghostity.oldValue.speechClient.source.code &&
+          MediaStream &&
+          SpeechRecognizer
+        ) {
+          SpeechRecognizer.stopContinuousRecognitionAsync(() => {
+            SpeechRecognizerStatus = "inactive";
+          });
+
+          SpeechRecognizer = initializeSpeechRecognizer(
+            MediaStream,
+            AzureCredentials,
+            changes.ghostity.newValue.speechClient.source.code
+          );
+
+          await attachSpeechListeners(SpeechRecognizer);
+
+          SpeechRecognizer.startContinuousRecognitionAsync(() => {
+            SpeechRecognizerStatus = "active";
+          });
+        }
+    }
+  });
 
   async function startSpeechClient(callback?: () => void) {
     return navigator.mediaDevices
       .getDisplayMedia({ video: true, audio: true })
       .then(async (stream) => {
+        const recognitionLang: SpeechRecognitionLanguages =
+          await chrome.storage.sync
+            .get("ghostity")
+            .then((results) => results.ghostity.speechClient.source.code);
+
         stream.getTracks().forEach((track) => {
           track.addEventListener("ended", () => {
             SpeechRecognizer?.stopContinuousRecognitionAsync(() => {
@@ -44,10 +77,11 @@ export async function initializeSpeechClient(): Promise<SpeechClient> {
           recognitionLang
         );
 
-        await attachClientListeners(SpeechRecognizer)
+        await attachSpeechListeners(SpeechRecognizer);
 
         SpeechRecognizer?.startContinuousRecognitionAsync(() => {
           SpeechRecognizerStatus = "active";
+          _autoPause()
           callback && callback();
         });
       });
@@ -56,6 +90,7 @@ export async function initializeSpeechClient(): Promise<SpeechClient> {
   function stopSpeechClient(callback?: () => void) {
     SpeechRecognizer?.stopContinuousRecognitionAsync(() => {
       SpeechRecognizerStatus = "inactive";
+      clearTimeout(pauseTimeout)
       callback && callback();
     });
 
@@ -73,6 +108,7 @@ export async function initializeSpeechClient(): Promise<SpeechClient> {
     if (SpeechRecognizer) {
       SpeechRecognizer?.startContinuousRecognitionAsync(() => {
         SpeechRecognizerStatus = "active";
+        _autoPause()
       });
     }
   }
@@ -80,6 +116,7 @@ export async function initializeSpeechClient(): Promise<SpeechClient> {
   function pauseSpeechRecognition() {
     SpeechRecognizer?.stopContinuousRecognitionAsync(() => {
       SpeechRecognizerStatus = "inactive";
+      clearTimeout(pauseTimeout)
     });
   }
 
@@ -87,6 +124,14 @@ export async function initializeSpeechClient(): Promise<SpeechClient> {
     return {
       SpeechRecognizerStatus,
     };
+  }
+
+  function _autoPause() {
+    pauseTimeout = setTimeout(() => {
+      pauseSpeechRecognition();
+
+      chrome.runtime.sendMessage({ message: "PausedNotification" });
+    }, 900000);
   }
 
   return {

@@ -7,7 +7,7 @@ var __webpack_exports__ = {};
 
 
 chrome.runtime.onMessage.addListener(function (msg, sender, response) {
-  var _a;
+  var _a, _b;
 
   if (msg.message === "SpeechClientResults" && ((_a = sender.tab) === null || _a === void 0 ? void 0 : _a.id)) {
     chrome.tabs.sendMessage(sender.tab.id, {
@@ -15,11 +15,15 @@ chrome.runtime.onMessage.addListener(function (msg, sender, response) {
       captions: Object.assign({}, msg.results)
     });
   }
+
+  if (msg.message === "PausedNotification" && ((_b = sender.tab) === null || _b === void 0 ? void 0 : _b.id)) {
+    chrome.tabs.sendMessage(sender.tab.id, {
+      command: "show-paused-notification"
+    });
+  }
 });
 chrome.tabs.onUpdated.addListener(function (tabId, changeInfo, tab) {
   var _a, _b;
-
-  console.log(changeInfo.url, tab.pendingUrl, tab.url, tab.status);
 
   switch (tab.status) {
     case "complete":

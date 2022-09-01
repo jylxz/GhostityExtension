@@ -7,11 +7,15 @@ chrome.runtime.onMessage.addListener((msg, sender, response) => {
       },
     });
   }
+
+  if (msg.message === "PausedNotification" && sender.tab?.id) {
+    chrome.tabs.sendMessage(sender.tab.id, {
+      command: "show-paused-notification",
+    });
+  }
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  console.log(changeInfo.url, tab.pendingUrl, tab.url, tab.status);
-
   switch (tab.status) {
     case "complete":
       if (tab.url?.includes("youtube.com/watch")) {
